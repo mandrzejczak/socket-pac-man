@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+    <title>Socket.IO pac-man</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+      $(function () {
+        var socket = io();
+
+        $('.move').on('click', function() {
+          socket.emit($(this).attr('id'));
+
+          return false;
+        });
+
+        socket.on('update', function(board) {
+          let playersPos = '';
+          board.clients.forEach(i => {
+            if (i.id === socket.id) {
+                console.log(i);
+              $('#pos').text(`${i.position.x}, ${i.position.y}`);
+            } else {
+              playersPos += `<li>X: ${i.position.x} Y: ${i.position.y}</li>`;
+            }
+          });
+
+          $('#players').html(playersPos);
+        });
+      });
+    </script>
+</head>
+<body>
+    MY POS:
+    <div id="pos"></div>
+
+    PLAYERS POS:
+    <ul id="players"></ul>
+    <div class="move" id="left">left</div>
+    <div class="move" id="right">right</div>
+    <div class="move" id="up">up</div>
+    <div class="move" id="down">down</div>
+</body>
+</html>
