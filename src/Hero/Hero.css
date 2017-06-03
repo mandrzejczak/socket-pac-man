@@ -1,0 +1,9 @@
+.hero {
+  position: absolute;
+  width: 50px;
+  height: 50px; }
+  .hero.-pacman {
+    background: #EFCE2B;
+    border-radius: 50%; }
+  .hero.-sprite {
+    background: #9944FF; }

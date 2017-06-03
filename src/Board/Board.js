@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Pacman from '../Pacman/Pacman'
+import Hero from '../Hero/Hero'
 import './Board.css';
 
 
@@ -20,14 +20,17 @@ export default class Board extends Component {
             pacmanPosition: {
                 x: 300,
                 y: 200
+            },
+            spritePosition: {
+                x: 100,
+                y: 400
             }
         };
+
         document.addEventListener('keydown', this.handleKeyPress);
     }
 
     handleKeyPress = (event) => {
-
-
         switch(event.key) {
             case 'ArrowUp':
                 this.setState((prevState) => {
@@ -70,15 +73,14 @@ export default class Board extends Component {
                 });
                 break;
         }
-
-        console.log(this.state.pacmanPosition.y)
     };
 
     render() {
         return (
             <div className="board" style={{ width: boardDimensions.x, height: boardDimensions.y }}>
 
-                <Pacman position={ this.state.pacmanPosition }></Pacman>
+                <Hero character="pacman" position={ this.state.pacmanPosition } />
+                <Hero character="sprite" position={ this.state.spritePosition } />
             </div>
         );
     }

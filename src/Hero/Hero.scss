@@ -1,0 +1,14 @@
+.hero {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+
+  &.-pacman {
+    background: #EFCE2B;
+    border-radius: 50%;
+  }
+
+  &.-sprite {
+    background: #9944FF;
+  }
+}
