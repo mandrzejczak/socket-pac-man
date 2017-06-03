@@ -12,9 +12,10 @@ app.get('/', function(req, res){
 });
 
 class User {
-  constructor(id) {
+  constructor(id, type) {
     this.id = id;
     this.active = true;
+    this.type = type;
     this.position = {
       x: 0,
       y: 0,
@@ -40,12 +41,18 @@ class User {
   moveDown() {
     this.position.y++;
   }
+
 }
 
 io.on('connection', function(socket){
   console.log('a user connected', socket.id);
 
-  const user = new User(socket.id);
+  let type = "pacman";
+  if (state.clients.filter(i => i.type === 'pacman').length) {
+    type = 'sprite';
+  }
+
+  const user = new User(socket.id, type);
   state.clients.push(user);
   io.emit('update', state);
 
@@ -95,6 +102,6 @@ io.on('connection', function(socket){
   });
 });
 
-http.listen(3000, function(){
-  console.log('listening on *:3000');
+http.listen(3001, function(){
+  console.log('listening on *:3001');
 });

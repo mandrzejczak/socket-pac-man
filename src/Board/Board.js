@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import Hero from '../Hero/Hero'
 import './Board.css';
 
+import { socketConnect } from 'socket.io-react';
 
 const boardDimensions = {
     x: 800,
@@ -12,76 +13,78 @@ const boardDimensions = {
 const positionOffset = 50;
 
 
-export default class Board extends Component {
+class Board extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            pacmanPosition: {
-                x: 300,
-                y: 200
-            },
-            spritePosition: {
-                x: 100,
-                y: 400
-            }
+            players: [],
+            /*
+              {
+                id: 'aaa',
+                type: 'sprite',
+                position: {
+                  x: 0,
+                  y: 0,
+                },
+                active,
+                color,
+
+              },
+              {
+                id: 'bbb',
+                type: 'pacman',
+                position: {
+                  x: 100,
+                  y: 100,
+                }
+              },
+            */
         };
 
         document.addEventListener('keydown', this.handleKeyPress);
     }
 
+    componentDidMount() {
+      this.props.socket.on('update', this.update);
+    }
+
+    update = (data) => {
+      this.setState({
+        players: data.clients
+      });
+    };
+
     handleKeyPress = (event) => {
         switch(event.key) {
             case 'ArrowUp':
-                this.setState((prevState) => {
-                    return {
-                        pacmanPosition: {
-                            ...prevState.pacmanPosition,
-                            y: prevState.pacmanPosition.y - positionOffset,
-                        },
-                    }
-                });
-                break;
+              this.props.socket.emit('up');
+              break;
             case 'ArrowRight':
-                this.setState((prevState) => {
-                    return {
-                        pacmanPosition: {
-                            ...prevState.pacmanPosition,
-                            x: prevState.pacmanPosition.x + positionOffset,
-                        },
-                    }
-                });
-                break;
+              this.props.socket.emit('right');
+              break;
             case 'ArrowDown':
-                this.setState((prevState) => {
-                    return {
-                        pacmanPosition: {
-                            ...prevState.pacmanPosition,
-                            y: prevState.pacmanPosition.y + positionOffset,
-                        },
-                    }
-                });
-                break;
+              this.props.socket.emit('down');
+              break;
             case 'ArrowLeft':
-                this.setState((prevState) => {
-                    return {
-                        pacmanPosition: {
-                            ...prevState.pacmanPosition,
-                            x: prevState.pacmanPosition.x - positionOffset,
-                        },
-                    }
-                });
-                break;
+              this.props.socket.emit('left');
+              break;
         }
     };
 
     render() {
         return (
             <div className="board" style={{ width: boardDimensions.x, height: boardDimensions.y }}>
-
-                <Hero character="pacman" position={ this.state.pacmanPosition } />
-                <Hero character="sprite" position={ this.state.spritePosition } />
+              {this.state.players.map(i =>
+                <Hero
+                  character={i.type}
+                  position={ i.position }
+                  key={i.id}
+                />
+              )}
             </div>
         );
     }
 }
+
+export default socketConnect(Board);
