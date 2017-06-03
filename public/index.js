@@ -33,8 +33,8 @@ class Game {
     this.state = {
       clients: [],
       board: {
-        width: 100,
-        height: 100,
+        width: 1000,
+        height: 1000,
         tileSize: 50,
       },
       walls: [
@@ -101,24 +101,36 @@ class Game {
     setInterval(this.updateGame.bind(this), 45);
   }
 
-  checkWallCollision(dir, pos) {
-    if (dir === 'right') {
-      return this.state.walls.filter(i => pos.x + this.state.board.tileSize + 1 === i.x).length;
-    }
-
-    if (dir === 'left') {
-      return this.state.walls.filter(i => pos.x - 1 === i.x + this.state.board.tileSize).length;
-    }
-
-    if (dir === 'down') {
-      return this.state.walls.filter(i => pos.y + this.state.board.tileSize + 1 === i.y).length;
-    }
-
+  checkWallCollision(dir, _ourPos) {
+    let ourPos = {x: 0, y: 0};
     if (dir === 'up') {
-      return this.state.walls.filter(i => pos.y - 1 === i.y + this.state.board.tileSize).length;
+      ourPos.y = _ourPos.y - 1;
+      ourPos.x = _ourPos.x;
+    }
+    if (dir === 'down') {
+      ourPos.y = _ourPos.y + 1;
+      ourPos.x = _ourPos.x;
+    }
+    if (dir === 'left') {
+      ourPos.x = _ourPos.x - 1;
+      ourPos.y = _ourPos.y;
+    }
+    if (dir === 'right') {
+      ourPos.x = _ourPos.x + 1;
+      ourPos.y = _ourPos.y;
     }
 
-    return false;
+    return this.state.walls.filter(wall => {
+      if (ourPos.x < wall.x + this.state.board.tileSize &&
+        ourPos.x + this.state.board.tileSize > wall.x &&
+        ourPos.y < wall.y + this.state.board.tileSize &&
+        this.state.board.tileSize + ourPos.y > wall.y) {
+        return true;
+      } else {
+        return false;
+      }
+    }).length;
+
   }
 
   updateGame() {
