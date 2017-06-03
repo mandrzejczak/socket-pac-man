@@ -17,6 +17,8 @@ class User {
     };
     this.actualDirection = null;
     this.nextDirection = null;
+    this.points = 0;
+    this.color = "#"+((1<<24)*Math.random()|0).toString(16);
   }
 
   getId() {
@@ -33,9 +35,10 @@ class Game {
     this.state = {
       clients: [],
       board: {
-        width: 1000,
-        height: 1000,
+        width: 800,
+        height: 500,
         tileSize: 50,
+        move: 1,
       },
       walls: [
           {
@@ -149,32 +152,24 @@ class Game {
         io.emit('update', this.state);
       });
 
-      socket.on('up', (msg) => {
-        console.log('up');
-
+      socket.on('up', () => {
         user.changeDirection('up');
       });
 
-      socket.on('down', (msg) => {
-        console.log('down');
-
+      socket.on('down', () => {
         user.changeDirection('down');
       });
 
-      socket.on('left', (msg) => {
-        console.log('left');
-
+      socket.on('left', () => {
         user.changeDirection('left');
       });
 
-      socket.on('right', (msg) => {
-        console.log('right');
-
+      socket.on('right', () => {
         user.changeDirection('right');
       });
     });
 
-    setInterval(this.updateGame.bind(this), 45);
+    setInterval(this.updateGame.bind(this), 5);
   }
 
   checkWallCollision(dir, _ourPos) {
@@ -196,6 +191,14 @@ class Game {
       ourPos.y = _ourPos.y;
     }
 
+    if (ourPos.x < 0 || ourPos.x > this.state.board.width - this.state.board.tileSize) {
+      return true;
+    }
+
+    if (ourPos.y < 0 || ourPos.y > this.state.board.height - this.state.board.tileSize) {
+      return true;
+    }
+
     return this.state.walls.filter(wall => {
       if (ourPos.x < wall.x + this.state.board.tileSize &&
         ourPos.x + this.state.board.tileSize > wall.x &&
@@ -209,36 +212,61 @@ class Game {
 
   }
 
+  checkPacmanCollision() {
+    const pacman = this.state.clients.filter(i => i.type === 'pacman')[0];
+    const ghosts = this.state.clients.filter(i => i.type !== 'pacman');
+
+    const activeGhosts = ghosts.filter(ghost => {
+      if (pacman.position.x < ghost.position.x + this.state.board.tileSize &&
+        pacman.position.x + this.state.board.tileSize > ghost.position.x &&
+        pacman.position.y < ghost.position.y + this.state.board.tileSize &&
+        this.state.board.tileSize + pacman.position.y > ghost.position.y) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+
+    activeGhosts.forEach(ghost => ghost.points++);
+
+    return !!activeGhosts.length;
+  }
+
   updateGame() {
     this.state.clients.forEach(i => {
+      if (i.nextDirection) {
+      }
+      // if (!i.actualDirection && i.nextDirection) {
+        i.actualDirection = i.nextDirection;
+        // i.nextDirection = null;
+      // }
+
       if (this.checkWallCollision(i.actualDirection, i.position)) {
-        console.log('collision');
         i.actualDirection = null;
       } else {
-        if (i.nextDirection) {
-          i.actualDirection = i.nextDirection;
-          i.nextDirection = null;
+        if (i.actualDirection) {
+          if (i.actualDirection === 'up') {
+            i.position.y -= this.state.board.move;
+          }
+
+          if (i.actualDirection === 'down') {
+            i.position.y += this.state.board.move;
+          }
+
+          if (i.actualDirection === 'left') {
+            i.position.x -= this.state.board.move;
+          }
+
+          if (i.actualDirection === 'right') {
+            i.position.x += this.state.board.move;
+          }
         }
       }
 
-
-      if (i.actualDirection) {
-        if (i.actualDirection === 'up') {
-          i.position.y--;
-        }
-
-        if (i.actualDirection === 'down') {
-          i.position.y++;
-        }
-
-        if (i.actualDirection === 'left') {
-          i.position.x--;
-        }
-
-        if (i.actualDirection === 'right') {
-          i.position.x++;
-        }
+      if (this.state.clients.filter(i => i.type === 'pacman').length) {
+        this.checkPacmanCollision();
       }
+      // this.state.clients.map(i => console.log(i.points));
 
       io.emit('update', this.state);
     })
