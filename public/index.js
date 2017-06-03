@@ -2,11 +2,6 @@ var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
-var state = {
-  clients: [],
-  board: {},
-};
-
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
@@ -20,88 +15,150 @@ class User {
       x: 0,
       y: 0,
     };
+    this.actualDirection = null;
+    this.nextDirection = null;
   }
 
   getId() {
     return this.id;
   }
 
-  moveLeft() {
-    this.position.x--;
+  changeDirection(dir) {
+    this.nextDirection = dir;
   }
-
-  moveRight() {
-    this.position.x++;
-  }
-
-  moveUp() {
-    this.position.y--;
-  }
-
-  moveDown() {
-    this.position.y++;
-  }
-
 }
 
-io.on('connection', function(socket){
-  console.log('a user connected', socket.id);
+class Game {
+  constructor() {
+    this.state = {
+      clients: [],
+      board: {
+        width: 100,
+        height: 100,
+        tileSize: 50,
+      },
+      walls: [
+        {
+          x: 50,
+          y: 0,
+        },
+        {
+          x: 0,
+          y: 50,
+        }
+      ]
+    };
 
-  let type = "pacman";
-  if (state.clients.filter(i => i.type === 'pacman').length) {
-    type = 'sprite';
+    io.on('connection', socket => {
+      console.log('a user connected', socket.id);
+
+      let type = "pacman";
+      if (this.state.clients.filter(i => i.type === 'pacman').length) {
+        type = 'sprite';
+      }
+
+      const user = new User(socket.id, type);
+      this.state.clients.push(user);
+      io.emit('update', this.state);
+
+      socket.on('disconnect', () => {
+        console.log('user disconnected', socket.id);
+
+        this.state.clients = Object.assign([],
+          this.state.clients.filter((i) => {
+            return i.getId() !== socket.id
+          })
+        );
+
+        io.emit('update', this.state);
+      });
+
+      socket.on('up', (msg) => {
+        console.log('up');
+
+        user.changeDirection('up');
+      });
+
+      socket.on('down', (msg) => {
+        console.log('down');
+
+        user.changeDirection('down');
+      });
+
+      socket.on('left', (msg) => {
+        console.log('left');
+
+        user.changeDirection('left');
+      });
+
+      socket.on('right', (msg) => {
+        console.log('right');
+
+        user.changeDirection('right');
+      });
+    });
+
+    setInterval(this.updateGame.bind(this), 45);
   }
 
-  const user = new User(socket.id, type);
-  state.clients.push(user);
-  io.emit('update', state);
+  checkWallCollision(dir, pos) {
+    if (dir === 'right') {
+      return this.state.walls.filter(i => pos.x + this.state.board.tileSize + 1 === i.x).length;
+    }
 
-  socket.on('disconnect', function(){
-    console.log('user disconnected', socket.id);
+    if (dir === 'left') {
+      return this.state.walls.filter(i => pos.x - 1 === i.x + this.state.board.tileSize).length;
+    }
 
-    state.clients = Object.assign([],
-      state.clients.filter((i) => {
-        return i.getId() !== socket.id
-      })
-    );
+    if (dir === 'down') {
+      return this.state.walls.filter(i => pos.y + this.state.board.tileSize + 1 === i.y).length;
+    }
 
-    io.emit('update', state);
-  });
+    if (dir === 'up') {
+      return this.state.walls.filter(i => pos.y - 1 === i.y + this.state.board.tileSize).length;
+    }
 
-  socket.on('update', function(msg) {
-    console.log('message: ' + msg);
-    io.emit('update', msg);
-  });
+    return false;
+  }
 
-  socket.on('up', function(msg) {
-    console.log('up');
+  updateGame() {
+    this.state.clients.forEach(i => {
+      if (this.checkWallCollision(i.actualDirection, i.position)) {
+        console.log('collision');
+        i.actualDirection = null;
+      } else {
+        if (i.nextDirection) {
+          i.actualDirection = i.nextDirection;
+          i.nextDirection = null;
+        }
+      }
 
-    user.moveUp();
-    io.emit('update', state);
-  });
 
-  socket.on('down', function(msg) {
-    console.log('down');
+      if (i.actualDirection) {
+        if (i.actualDirection === 'up') {
+          i.position.y--;
+        }
 
-    user.moveDown();
-    io.emit('update', state);
-  });
+        if (i.actualDirection === 'down') {
+          i.position.y++;
+        }
 
-  socket.on('left', function(msg) {
-    console.log('left');
+        if (i.actualDirection === 'left') {
+          i.position.x--;
+        }
 
-    user.moveLeft();
-    io.emit('update', state);
-  });
+        if (i.actualDirection === 'right') {
+          i.position.x++;
+        }
+      }
 
-  socket.on('right', function(msg) {
-    console.log('right');
+      io.emit('update', this.state);
+    })
+  }
+}
 
-    user.moveRight();
-    io.emit('update', state);
-  });
-});
+new Game();
 
-http.listen(3001, function(){
+http.listen(3001, () => {
   console.log('listening on *:3001');
 });
