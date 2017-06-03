@@ -1,0 +1,24 @@
+.scoreboard {
+  box-sizing: border-box;
+  display: block;
+  margin-top: 40px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-bottom: 10px;
+
+  width: 820px;
+  border: 2px solid #003;
+  color: #000033;
+
+
+  &__player {
+    margin: 5px;
+  }
+
+  &__player-id {
+    margin: 0 2px;
+    height: 15px;
+    width: 20px;
+    display: inline-block;
+  }
+}

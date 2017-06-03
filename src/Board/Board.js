@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import Hero from '../Hero/Hero'
 import Wall from '../Wall/Wall'
 import './Board.css';
+import Scoreboard from '../Scoreboard/Scoreboard'
 
 import { socketConnect } from 'socket.io-react';
 
@@ -57,20 +58,26 @@ class Board extends Component {
 
     render() {
         return (
-            <div className="board" style={{ width: boardDimensions.x, height: boardDimensions.y }}>
-              {this.state.players.map(i =>
-                <Hero
-                  character={i.type}
-                  position={ i.position }
-                  key={i.id}
+            <div>
+                <div className="board" style={{ width: boardDimensions.x, height: boardDimensions.y }}>
+                  {this.state.players.map(i =>
+                    <Hero
+                      character={i.type}
+                      position={ i.position }
+                      key={i.id}
+                      color={i.color}
+                    />
+                  )}
+                  {this.state.walls.map(i =>
+                      <Wall
+                          position={ i }
+                          tileSize={this.state.board.tileSize}
+                      />
+                    )}
+                </div>
+                <Scoreboard
+                    players = {this.state.players}
                 />
-              )}
-              {this.state.walls.map(i =>
-                  <Wall
-                      position={ i }
-                      tileSize={this.state.board.tileSize}
-                  />
-                )}
             </div>
         );
     }

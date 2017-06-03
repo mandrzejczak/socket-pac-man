@@ -9,7 +9,12 @@ export default class Hero extends Component {
 
     render() {
         return (
-            <div className={ 'hero -' +  this.props.character } style={{ top: this.props.position.y, left: this.props.position.x }}>
+            <div className={ 'hero -' +  this.props.character }
+                 style={{
+                     top: this.props.position.y,
+                     left: this.props.position.x,
+                     background: this.props.color,
+                 }}>
             </div>
         );
     }
