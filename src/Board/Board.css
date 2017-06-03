@@ -1,0 +1,9 @@
+.board {
+  box-sizing: content-box;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 50px;
+  background: #FFF6F6;
+  border: 10px solid #EA4949;
+  position: relative; }
