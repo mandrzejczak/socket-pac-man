@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Hero from '../Hero/Hero'
+import Wall from '../Wall/Wall'
 import './Board.css';
 
 import { socketConnect } from 'socket.io-react';
@@ -19,6 +20,10 @@ class Board extends Component {
 
         this.state = {
             players: [],
+            walls: [ {
+                x: 100,
+                y: 100
+            }]
             /*
               {
                 id: 'aaa',
@@ -82,6 +87,10 @@ class Board extends Component {
                   key={i.id}
                 />
               )}
+              {this.state.walls.map(i =>
+                  <Wall position={ i }
+                  />
+                )}
             </div>
         );
     }
