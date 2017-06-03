@@ -20,31 +20,7 @@ class Board extends Component {
 
         this.state = {
             players: [],
-            walls: [ {
-                x: 100,
-                y: 100
-            }]
-            /*
-              {
-                id: 'aaa',
-                type: 'sprite',
-                position: {
-                  x: 0,
-                  y: 0,
-                },
-                active,
-                color,
-
-              },
-              {
-                id: 'bbb',
-                type: 'pacman',
-                position: {
-                  x: 100,
-                  y: 100,
-                }
-              },
-            */
+            walls: []
         };
 
         document.addEventListener('keydown', this.handleKeyPress);
@@ -56,7 +32,9 @@ class Board extends Component {
 
     update = (data) => {
       this.setState({
-        players: data.clients
+        players: data.clients,
+        walls: data.walls,
+        board: data.board
       });
     };
 
@@ -88,7 +66,9 @@ class Board extends Component {
                 />
               )}
               {this.state.walls.map(i =>
-                  <Wall position={ i }
+                  <Wall
+                      position={ i }
+                      tileSize={this.state.board.tileSize}
                   />
                 )}
             </div>

@@ -9,7 +9,14 @@ export default class Wall extends Component {
 
     render() {
         return (
-            <div className="wall" style={{ top: this.props.position.y, left: this.props.position.x }}>
+            <div
+                className="wall"
+                style={{
+                    top: this.props.position.y,
+                    left: this.props.position.x,
+                    width: this.props.tileSize,
+                    height: this.props.tileSize
+                }}>
             </div>
         );
     }
